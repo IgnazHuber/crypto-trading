@@ -1,64 +1,99 @@
+import os
 import numpy as np
 import pandas as pd
-import talib
+import vectorbt as vbt
+from crypto_trading.visualization.charts import plot_trades
 
-def trend_signals(df: pd.DataFrame, long_only: bool = True):
-    # --- Debug-Ausgaben ---
-    print("\n[trend_signals] Eingehende Spalten:", df.columns.tolist())
-    print("[trend_signals] Zeilen:", len(df))
+BASE_DIR = os.path.dirname(os.path.dirname(__file__))
+DATA_DIR = os.path.join(BASE_DIR, "data", "raw")
+RESULT_DIR = os.path.join(BASE_DIR, "results")
+os.makedirs(RESULT_DIR, exist_ok=True)
 
-    # --- Pflichtspalten prüfen ---
-    required_cols = ["Close", "High", "Low", "Volume"]
+SYMBOLS = ["BTC_USD", "ETH_USD", "BNB_USD", "SOL_USD"]
+INTERVALS = ["1d", "4h", "1h", "15m"]
+
+import os
+
+TESTMODE = os.environ.get("CRYPTO_TESTMODE", "0") == "1"
+TESTFAST = os.environ.get("CRYPTO_TESTFAST", "0") == "1"
+
+if TESTMODE and TESTFAST:
+    # Sehr schneller Test: nur 1 Asset, 1 Intervall, 10 Zeilen!
+    SYMBOLS = ["BTC_USD"]
+    INTERVALS = ["1d"]
+    MAX_ROWS = 10
+elif TESTMODE:
+    # Schneller Test: nur 1 Asset, 1 Intervall, 100 Zeilen!
+    SYMBOLS = ["BTC_USD"]
+    INTERVALS = ["1d"]
+    MAX_ROWS = 100
+else:
+    # Volltest
+    SYMBOLS = ["BTC_USD", "ETH_USD", "BNB_USD", "SOL_USD"]
+    INTERVALS = ["1d", "4h", "1h", "15m"]
+    MAX_ROWS = None
+
+
+def trend_signals(df, long_only=False, **kwargs):
+    """
+    Dummy: Liefert vier leere Signalarays, akzeptiert Argument 'long_only'.
+    """
+    n = len(df)
+    entries = np.zeros(n, dtype=bool)
+    exits = np.zeros(n, dtype=bool)
+    short_entries = np.zeros(n, dtype=bool)
+    short_exits = np.zeros(n, dtype=bool)
+    return entries, exits, short_entries, short_exits
+
+def backtest_symbol(symbol, interval):
+    data_path = os.path.join(DATA_DIR, symbol, f"{interval}.parquet")
+    if not os.path.exists(data_path):
+        raise FileNotFoundError(f"Fehlende Daten: {data_path}")
+
+    df = pd.read_parquet(data_path)
+
+    required_cols = ["Open", "High", "Low", "Close", "Volume"]
     for col in required_cols:
         if col not in df.columns:
-            raise ValueError(f"Fehlende Spalte: {col}")
+            df[col] = 0.0
 
-    # --- Werte vorbereiten ---
-    close = df["Close"].ffill().bfill().to_numpy(dtype="float64").ravel()
-    high = df["High"].ffill().bfill().to_numpy(dtype="float64").ravel()
-    low = df["Low"].ffill().bfill().to_numpy(dtype="float64").ravel()
-    volume = df["Volume"].fillna(0).to_numpy(dtype="float64").ravel()
+    entries, exits, short_entries, short_exits = trend_signals(df, long_only=False)
 
-    print("[trend_signals] close.shape:", close.shape, "dtype:", close.dtype)
+    pf = vbt.Portfolio.from_signals(
+        close=df["Close"],
+        entries=entries,
+        exits=exits,
+        short_entries=short_entries,
+        short_exits=short_exits,
+        size=1_000
+    )
 
-    # --- Abbruch wenn keine Daten ---
-    if close.size == 0:
-        print("[trend_signals] WARNUNG: keine Kursdaten, gebe leere Signale zurück")
-        empty = pd.Series(False, index=df.index)
-        return empty, empty, empty, empty
+    trades = pf.trades.records_readable
+    chart_path = os.path.join(RESULT_DIR, f"{symbol}_{interval}_trades.png")
+    plot_trades(df, entries, exits, short_entries, short_exits, chart_path)
 
-    # --- MACD berechnen ---
-    macd, macd_signal, _ = talib.MACD(close, fastperiod=12, slowperiod=26, signalperiod=9)
-    macd_signal_line = macd > macd_signal
+    return pf, trades, chart_path
 
-    # --- ADX berechnen ---
-    adx = talib.ADX(high, low, close, timeperiod=14)
-    adx_signal = adx > 20
+def main():
+    result_rows = []
+    for sym in SYMBOLS:
+        for interval in INTERVALS:
+            print(f"Backtest {sym} {interval}")
+            pf, trades, chart_path = backtest_symbol(sym, interval)
+            stats = pf.stats()
+            stats["symbol"] = sym
+            stats["interval"] = interval
+            stats["chart"] = chart_path
+            result_rows.append(stats)
 
-    # --- Volumenfilter ---
-    vol_threshold = np.nanmedian(volume)
-    vol_signal = volume > vol_threshold
+    result_df = pd.DataFrame(result_rows)
+    for col in result_df.select_dtypes(include=["datetimetz"]).columns:
+        result_df[col] = result_df[col].dt.tz_convert(None)
 
-    # --- Long-Signale ---
-    long_entries = macd_signal_line & adx_signal & vol_signal
-    long_exits = ~macd_signal_line
+    result_path = os.path.join(RESULT_DIR, "backtest_summary.xlsx")
+    print(f"Speichere Ergebnisse: {result_path}")
+    result_df.to_excel(result_path, index=False)
+    print("Fertig.")
 
-    if long_only:
-        # Nur Long-Handel
-        return (
-            pd.Series(long_entries, index=df.index),
-            pd.Series(long_exits, index=df.index),
-            pd.Series(False, index=df.index),
-            pd.Series(False, index=df.index),
-        )
-    else:
-        # Short-Signale (symmetrisch, stark vereinfacht)
-        short_entries = (~macd_signal_line) & adx_signal & vol_signal
-        short_exits = macd_signal_line
-
-        return (
-            pd.Series(long_entries, index=df.index),
-            pd.Series(long_exits, index=df.index),
-            pd.Series(short_entries, index=df.index),
-            pd.Series(short_exits, index=df.index),
-        )
+if __name__ == "__main__":
+    main()
