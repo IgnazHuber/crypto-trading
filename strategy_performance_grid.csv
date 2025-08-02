@@ -1,0 +1,9 @@
+Asset,Direction,RSI_PERIOD,MACD_FAST,MACD_SLOW,MACD_SIGNAL,EMA_SHORT,EMA_LONG,BB_WINDOW,STOCH_WINDOW,STOP_LOSS_PCT,TAKE_PROFIT_PCT,Anzahl Trades,Gesamt-PnL,Trefferquote,Ø Trade-PnL,Max. Gewinn,Max. Verlust,Sharpe,MaxDrawdown,Letztes Kapital
+BTCUSDT,long,14,12,26,9,50,200,20,14,0.03,0.06,0,,,,,,,,
+BTCUSDT,short,14,12,26,9,50,200,20,14,0.03,0.06,0,,,,,,,,
+BTCUSDT,long,14,12,26,9,50,200,20,14,0.03,0.1,0,,,,,,,,
+BTCUSDT,short,14,12,26,9,50,200,20,14,0.03,0.1,0,,,,,,,,
+BTCUSDT,long,14,12,26,9,50,200,20,14,0.05,0.06,0,,,,,,,,
+BTCUSDT,short,14,12,26,9,50,200,20,14,0.05,0.06,0,,,,,,,,
+BTCUSDT,long,14,12,26,9,50,200,20,14,0.05,0.1,0,,,,,,,,
+BTCUSDT,short,14,12,26,9,50,200,20,14,0.05,0.1,0,,,,,,,,

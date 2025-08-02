@@ -1,0 +1,187 @@
+# indicator_db.py
+
+TOP_INDICATORS = [
+    "MACD", "RSI", "EMA", "SMA", "BollingerBands", "ADX", "OBV", "VWAP", "CCI", "ATR",
+    "Stochastic", "MFI", "Williams %R", "Ichimoku", "ParabolicSAR", "ROC", "TRIX", "ChaikinOscillator",
+    "SuperTrend", "DonchianChannels", "KeltnerChannels", "Envelope", "DMI", "TEMA", "DEMA",
+    "UltimateOscillator", "ElderRay", "GuppyMA", "ChandeMO", "Momentum", "Aroon", "ZigZag", "DetrendedPriceOscillator",
+    "ForceIndex", "CoppockCurve", "Fractal", "GatorOscillator", "HilbertTransform", "LinearRegression",
+    "MedianPrice", "PriceChannel", "Slope", "StdDeviation", "TRIMA", "WilderMA", "BalanceOfPower",
+    "MoneyFlowIndex", "OnBalanceVolume", "PriceOscillator", "RelativeVigor", "StochasticRSI",
+    "VolatilityIndex", "VolumeOscillator", "VolumePriceTrend", "VortexIndicator", "DisparityIndex",
+    "ChoppinessIndex", "McGinleyDynamic", "TrueStrengthIndex", "A/DLine", "AccDist", "HighLowBands",
+    "PivotPoints", "PriceMomentumOscillator", "RangeIndicator", "SentimentIndex", "SqueezeMomentum",
+    "TrendIntensity", "TRIN", "VerticalHorizontalFilter", "VolatilityRatio", "WilliamsAccumulationDistribution",
+    "ZScore", "EOM", "RSquared", "RVI", "KST", "BullBearIndex", "MassIndex", "QStick", "RainbowMA",
+    "StochMomentum", "TrendMagic", "VolumeFlow", "WeightedMA", "ADL", "BearPower", "BullPower",
+    "FrAMA", "GopalakrishnanRangeIndex", "HighMinusLow", "LowPassFilter", "MedianMA", "MIDAS", "PriceRateOfChange",
+    "SchaffTrendCycle", "SineWaveIndicator", "SMAEnvelope"
+]
+
+INDICATOR_INFOS = {
+    "MACD": {
+        "shortname": "MACD",
+        "fullname": "Moving Average Convergence Divergence",
+        "shortinfo": [
+            "Trendfolge-Indikator.",
+            "Zwei exponentielle gleitende Durchschnitte.",
+            "Identifiziert Trendwenden.",
+            "MACD-Linie, Signallinie, Histogramm.",
+            "Beliebt im mittelfristigen Trading."
+        ],
+        "market_env": [
+            "Effektiv in trendstarken Märkten.",
+            "Fehlsignale in Seitwärtsphasen.",
+            "Mit Volumen-Bestätigung sicherer.",
+            "Für Krypto und Aktien geeignet.",
+            "Mit RSI und BB kombinierbar."
+        ],
+        "typical_values": [
+            "Standard: 12/26/9 EMA.",
+            "Cross Signal: MACD kreuzt Signallinie.",
+            "Histogramm als Trendstärke.",
+            "Null-Linie als Trendfilter."
+        ],
+        "combination": [
+            "Sinnvoll mit RSI, ADX.",
+            "Mit Volumenindikatoren.",
+            "Nicht nur mit weiteren Trendfolgern.",
+            "Mit Candlestick-Mustern.",
+            "Für Gewinnmitnahmen (Exit) nutzen."
+        ],
+        "longinfo": [
+            "Gerald Appel entwickelte den MACD in den 1970er Jahren.",
+            "MACD = EMA(12) – EMA(26).",
+            "Signal-Linie = EMA(9) des MACD.",
+            "Histogramm = MACD – Signallinie.",
+            "Positive Werte → Aufwärtstrend.",
+            "Negative Werte → Abwärtstrend.",
+            "Divergenzen als Trendumkehr-Signal.",
+            "Beliebt für mittelfristiges Swing-Trading.",
+            "Nicht normiert – Werte sind relativ.",
+            "Histogramm zeigt Trenddynamik.",
+            "Mit Volumen-Filter besonders robust.",
+            "Vorsicht bei extremer Volatilität.",
+            "Backtestbar in allen Märkten.",
+            "Signal-Cross als Kauf-/Verkaufssignal.",
+            "Starke Trends liefern beste MACD-Signale."
+        ]
+    },
+    "RSI": {
+        "shortname": "RSI",
+        "fullname": "Relative Strength Index",
+        "shortinfo": [
+            "Oszillator für Marktstärke.",
+            "Typisch 14 Perioden.",
+            "Werte 0 bis 100.",
+            "Überkauft >70, überverkauft <30.",
+            "Für Trendumkehr-Signale."
+        ],
+        "market_env": [
+            "Sinnvoll in trendlosen oder schwachen Märkten.",
+            "Warnsignal bei starken Trends.",
+            "Mit Trendfiltern kombinieren.",
+            "Hilfreich mit SMA/EMA.",
+            "Nicht als alleiniges Signal."
+        ],
+        "typical_values": [
+            "Standard: 14 Perioden.",
+            "Überkauft: >70.",
+            "Überverkauft: <30.",
+            "Neutral: 40–60."
+        ],
+        "combination": [
+            "Mit MACD, SMA, BB.",
+            "Volumenindikatoren empfohlen.",
+            "Nicht nur mit anderen Oszillatoren.",
+            "Mit Trendfiltern robust.",
+            "Filter für Entry/Exit."
+        ],
+        "longinfo": [
+            "J. Welles Wilder entwickelte den RSI 1978.",
+            "100 – (100 / (1 + RS)), RS = Gewinn/Verlust.",
+            "Nahe 100: überkauft, nahe 0: überverkauft.",
+            "Kann lange im Extrembereich bleiben.",
+            "Divergenzen als Warnsignal.",
+            "Glättung über gleitende Durchschnitte möglich.",
+            "Empfindlich auf sehr kurze Perioden.",
+            "Kombination mit weiteren Indikatoren.",
+            "Für Konsolidierungsphasen nützlich.",
+            "RSI weltweit anerkannt.",
+            "Signalzonen können je nach Markt angepasst werden.",
+            "Mehrere Zeitrahmen machen das Signal robuster.",
+            "Nicht mit Stochastik verwechseln.",
+            "Fehlsignale in starken Trends.",
+            "Hilfreich für Rebound-Strategien."
+        ]
+    },
+    "EMA": {
+        "shortname": "EMA",
+        "fullname": "Exponential Moving Average",
+        "shortinfo": [
+            "Gewichtet jüngere Preise stärker.",
+            "Reagiert schneller als SMA.",
+            "Glatte Trends – weniger Fehlsignale.",
+            "Signalgeber bei Crossover.",
+            "Beliebt bei Trendfolgern."
+        ],
+        "market_env": [
+            "Sehr effektiv in Trendmärkten.",
+            "Für schnelle Ausbrüche.",
+            "Schwächer bei Seitwärtsbewegung.",
+            "Mit Volumenindikatoren verstärken.",
+            "Daytrader bevorzugen kurze EMAs."
+        ],
+        "typical_values": [
+            "Typisch: 9, 12, 26, 50, 200 Perioden.",
+            "EMA50/200 für große Trends.",
+            "Kurze EMAs für Scalping.",
+            "EMA-Crossover als Signal."
+        ],
+        "combination": [
+            "Sinnvoll mit RSI, MACD, ADX.",
+            "Mit Volumenfilter robust.",
+            "Mit SMA vergleichen für Trendwechsel.",
+            "Nicht nur als alleiniges Signal.",
+            "Mit Trendfolge-Indikatoren."
+        ],
+        "longinfo": [
+            "Der EMA gewichtet neuere Preise stärker.",
+            "Dadurch reagiert er schneller.",
+            "Sehr beliebt für Trendbestimmung.",
+            "Crossovers liefern Kauf-/Verkaufssignale.",
+            "Basis vieler weiterer Indikatoren.",
+            "Für Backtesting geeignet.",
+            "Je kürzer, desto volatiler.",
+            "Lange EMAs filtern Rauschen.",
+            "Oft mit Price Action kombiniert.",
+            "EMA-Crossovers geben klare Einstiege.",
+            "Kann Golden Cross/Death Cross signalisieren.",
+            "Schneller als SMA.",
+            "Weltweit Standard in Tradingtools.",
+            "Optimal für automatisiertes Trading.",
+            "Auch in Multi-Timeframe-Strategien sinnvoll."
+        ]
+    },
+    # --- hier alle weiteren TOP_INDICATORS nach gleichem Muster ergänzen! ---
+    # "SMA": {...}, "BollingerBands": {...}, usw.
+}
+
+# Placeholder-Template (für schnellen Start – einfach ausfüllen/überschreiben!):
+TEMPLATE_INDICATOR = {
+    "shortname": "",
+    "fullname": "",
+    "shortinfo": ["(Beschreibung ergänzen)"],
+    "market_env": ["(Beschreibung ergänzen)"],
+    "typical_values": ["(Beschreibung ergänzen)"],
+    "combination": ["(Beschreibung ergänzen)"],
+    "longinfo": ["(Beschreibung ergänzen)"]
+}
+
+# Automatisches Einfügen leerer Placeholder für alle restlichen Indikatoren:
+for key in TOP_INDICATORS:
+    if key not in INDICATOR_INFOS:
+        INDICATOR_INFOS[key] = TEMPLATE_INDICATOR.copy()
+        INDICATOR_INFOS[key]["shortname"] = key
+        INDICATOR_INFOS[key]["fullname"] = key
+
