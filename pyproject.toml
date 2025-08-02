@@ -1,3 +1,22 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "crypto-trading"
+version = "0.1.0"
+description = "Crypto Trading Analyse und Backtesting"
+authors = [
+    {name="Robert", email="deine.email@example.com"}
+]
+readme = "README.md"
+license = {text = "MIT"}
+dependencies = []
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["crypto_trading*"]
+
 [tool.pytest.ini_options]
 pythonpath = ["."]
 addopts = "-v"
