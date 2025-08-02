@@ -14,10 +14,10 @@ env.bak/
 
 # Data & Results (große Daten/Output rauslassen!)
 # data/
-analysis_results/
-results/
-*.csv
-*.parquet
+# analysis_results/
+# results/
+# *.csv
+# *.parquet
 
 # IDEs/Editoren
 .vscode/
