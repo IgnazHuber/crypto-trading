@@ -1,8 +1,8 @@
-import os
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import ta
+import os
 from itertools import product
 from datetime import datetime
 import tempfile
@@ -46,28 +46,6 @@ if multi_choice.strip():
     parquet_files = [os.path.join(DATA_PATH, files[i]) for i in selection if 0 <= i < len(files)]
 else:
     parquet_files = [os.path.join(DATA_PATH, f) for f in DEFAULT_FILES]
-
-# ======= ROBUSTES PFADHANDLING =======
-def resolve_path(fn):
-    """
-    Sucht eine Datei robust im aktuellen Ordner, im typischen Data-Ordner,
-    oder akzeptiert absolute Pfade. Gibt den gefundenen Pfad zurück,
-    sonst FileNotFoundError mit getesteten Kandidaten.
-    """
-    if os.path.isabs(fn) and os.path.exists(fn):
-        return fn
-    if os.path.exists(fn):
-        return fn
-    candidates = [
-        os.path.join(os.getcwd(), fn),
-        os.path.join(os.getcwd(), "crypto_trading", "data", "raw", fn),
-        os.path.join(os.path.dirname(__file__), "..", "data", "raw", fn),
-        os.path.join(os.path.dirname(__file__), "..", "..", "data", "raw", fn)
-    ]
-    for path in candidates:
-        if os.path.exists(path):
-            return path
-    raise FileNotFoundError(f"Datei nicht gefunden: {fn}\nGetestet: {candidates}")
 
 # ===== Ergebnis-Container =====
 all_results = []
@@ -249,6 +227,7 @@ def get_top_flop_trades(trades, n=5):
     return top, flop
 
 def plot_portfolio_equity(df_all_trades, filename):
+    # Kombinierte Portfolio-Kurve aus allen Assets und Paramsets
     eq = pd.Series(1.0)
     all_trades = df_all_trades.copy()
     all_trades = all_trades.sort_values('exit_time')
@@ -276,6 +255,7 @@ def plot_portfolio_monthly(df_all_trades, filename):
 
 def export_pdf_report(all_trades, all_perf, asset_param_results, tmpdir, filename="strategy_report.pdf"):
     pdf = FPDF(orientation='L', unit='mm', format='A4')
+    pdf.set_auto_page_break(auto=True, margin=12)
     pdf.add_page()
     pdf.set_font("Arial", 'B', 18)
     pdf.cell(0, 12, "Crypto-Strategie-Report", ln=True, align='C')
@@ -285,6 +265,7 @@ def export_pdf_report(all_trades, all_perf, asset_param_results, tmpdir, filenam
     pdf.cell(0, 10, f"Assets: {', '.join(set(all_trades['asset']))}", ln=True)
     pdf.cell(0, 10, f"Parameter-Grid: {len(param_grid)} Kombinationen", ln=True)
     pdf.ln(4)
+    # Portfolio-Gesamtauswertung
     einsatz, erloese, gewinn_abs, gewinn_rel = gesamtperformance(all_trades)
     pdf.set_font("Arial", 'B', 13)
     pdf.cell(0, 9, "Portfolio-Performance:", ln=True)
@@ -293,6 +274,7 @@ def export_pdf_report(all_trades, all_perf, asset_param_results, tmpdir, filenam
     pdf.cell(60, 7, f"Verkauf: {erloese:,.2f}")
     pdf.cell(60, 7, f"PnL: {gewinn_abs:,.2f}  ({gewinn_rel:.2f}%)", ln=True)
     pdf.ln(3)
+    # Portfolio-Grafiken
     port_eqfile = os.path.join(tmpdir, "portfolio_equity.png")
     port_monfile = os.path.join(tmpdir, "portfolio_monat.png")
     plot_portfolio_equity(all_trades, port_eqfile)
@@ -303,6 +285,7 @@ def export_pdf_report(all_trades, all_perf, asset_param_results, tmpdir, filenam
     pdf.cell(0, 8, "Portfolio Monatsrenditen:", ln=True)
     pdf.image(port_monfile, w=150)
     pdf.ln(4)
+    # Top-/Flop-Trades gesamt
     top, flop = get_top_flop_trades(all_trades, N_TOP)
     pdf.set_font("Arial", 'B', 12)
     pdf.cell(0, 7, f"Top {N_TOP} Trades (Portfolio):", ln=True)
@@ -316,6 +299,7 @@ def export_pdf_report(all_trades, all_perf, asset_param_results, tmpdir, filenam
     for _, t in flop.iterrows():
         pdf.multi_cell(0, 5, f"ID {int(t['trade_id'])} {t['asset']}: {t['kaufpreis']} → {t['verkaufspreis']} | PnL {t['gewinn_verlust']:.2f}% | {t['kurzanalyse']}")
     pdf.ln(6)
+    # Asset-seitig & Paramset
     for asset, paramsets in asset_param_results.items():
         pdf.add_page()
         pdf.set_font("Arial", 'B', 14)
@@ -363,8 +347,7 @@ progress = tqdm(total=total_tasks, desc="Analyse & Reporting", ncols=80)
 
 for parquet_file in parquet_files:
     asset = os.path.basename(parquet_file).split("_")[0]
-    resolved = resolve_path(parquet_file)
-    df = pd.read_parquet(resolved)
+    df = pd.read_parquet(parquet_file)
     df = df.sort_index()
     if not np.issubdtype(df.index.dtype, np.datetime64):
         if 'timestamp' in df.columns:
@@ -404,8 +387,7 @@ if EXPORT_TRADE_CSV:
 if EXPORT_PERF_CSV:
     df_perf = pd.DataFrame(all_results)
     df_perf.to_csv("strategy_performance_grid.csv", index=False)
-    df_perf.to_excel("strategy_performance_grid.xlsx", index=False)
-    print("Performance-Grid gespeichert: strategy_performance_grid.csv und strategy_performance_grid.xlsx")
+    print("Performance-Grid gespeichert: strategy_performance_grid.csv")
 
 if EXPORT_PDF:
     df_all_trades = pd.concat(all_trades, ignore_index=True)
