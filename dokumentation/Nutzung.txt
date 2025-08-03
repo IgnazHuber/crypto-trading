@@ -1,0 +1,19 @@
+Nutzung
+Schnelltest (FAST):
+
+shell
+Kopieren
+Bearbeiten
+python -m crypto_trading.analysis.batch_run --fast
+Vollanalyse:
+
+shell
+Kopieren
+Bearbeiten
+python -m crypto_trading.analysis.batch_run
+Eigene Asset-Liste:
+
+shell
+Kopieren
+Bearbeiten
+python -m crypto_trading.analysis.batch_run --assets BTC-USD ETH-USD --years

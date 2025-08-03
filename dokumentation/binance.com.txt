@@ -1,0 +1,9 @@
+binance.com
+
+API Key // 250802
+
+3lr8Crn9Ld6dC2qwsGUiBjfZ4pTYGQif4LcSVC21ptlfg9IjLOWkAMprlnPWWwwp
+
+Secret Key
+
+Yti4j5LW0ofNO4oa2deKFdxrjeeoxSYDHEQOdN1gbmCRnG8efFLCU6tePRjrtZyO
