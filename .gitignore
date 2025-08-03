@@ -16,7 +16,7 @@ env.bak/
 # data/
 # analysis_results/
 # results/
-# *.csv
+*.csv
 # *.parquet
 
 # IDEs/Editoren
