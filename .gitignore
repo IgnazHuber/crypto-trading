@@ -13,20 +13,26 @@ ENV/
 env.bak/
 
 # Data & Results (große Daten/Output rauslassen!)
- data/
+# data/
 # analysis_results/
-# results/
-# *.csv
- *.parquet
+results/
+#*.csv
+#*.parquet
 
 # IDEs/Editoren
 .vscode/
 .idea/
 .DS_Store
+.inhalt
 
 # Sonstiges
 *.log
 *.pdf
 *.xlsx
 *.png
-*.html
+#*.html
+
+# Tests / pytest
+d:\Projekte\crypto_trading\tests\
+
+

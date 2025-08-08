@@ -1,0 +1,12 @@
+{
+    "ema_length": 10,
+    "sma_length": 20,
+    "rsi_length": 7,
+    "macd_fast": 8,
+    "macd_slow": 17,
+    "macd_signal": 5,
+    "mfi_length": 10,
+    "atr_length": 7,
+    "bb_length": 20,
+    "bb_std": 1.5
+}
